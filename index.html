@@ -369,9 +369,7 @@ const chyba  = document.getElementById("chyba");
 
 vstup.focus();
 
-form.addEventListener("submit", function (udalost) {
-  udalost.preventDefault();   // aby se stranka po odeslani neprenacetla
-
+function zkusHeslo() {
   if (vstup.value.trim().toLowerCase() === HESLO) {
     odemkni();
   } else {
@@ -384,6 +382,21 @@ form.addEventListener("submit", function (udalost) {
     vstup.classList.add("zatrepat");
 
     vstup.select();
+  }
+}
+
+// kliknuti na tlacitko Vstoupit
+form.addEventListener("submit", function (udalost) {
+  udalost.preventDefault();   // aby se stranka po odeslani neprenacetla
+  zkusHeslo();
+});
+
+// Enter v policku. Nespolehame se na to, ze ho formular odchyti sam -
+// na nekterych klavesnicich (hlavne mobilnich) se to nemusi stat.
+vstup.addEventListener("keydown", function (udalost) {
+  if (udalost.key === "Enter") {
+    udalost.preventDefault();
+    zkusHeslo();
   }
 });
 
