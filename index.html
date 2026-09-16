@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Co je za den</title>
+
+  <!-- CSS = vzhled stránky -->
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;              /* vycentrování obsahu */
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      font-family: system-ui, "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+
+    button {
+      font-size: 20px;
+      padding: 16px 32px;
+      border: none;
+      border-radius: 12px;
+      background: #38bdf8;
+      color: #0f172a;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button:hover { background: #7dd3fc; }
+
+    #vysledek {
+      font-size: 40px;
+      font-weight: 700;
+      min-height: 48px;           /* aby stránka neposkakovala */
+    }
+  </style>
+</head>
+
+<body>
+  <!-- HTML = obsah stránky -->
+  <button id="tlacitko">Co je za den</button>
+  <div id="vysledek"></div>
+
+  <!-- JavaScript = chování stránky -->
+  <script>
+    // Pole názvů dnů. Pozor: JavaScript počítá týden od neděle (index 0).
+    const dny = ["neděle", "pondělí", "úterý", "středa", "čtvrtek", "pátek", "sobota"];
+
+    // Najdeme prvky na stránce podle jejich id
+    const tlacitko = document.getElementById("tlacitko");
+    const vysledek = document.getElementById("vysledek");
+
+    // Když se klikne na tlačítko, spustí se tahle funkce
+    tlacitko.addEventListener("click", function () {
+      const dnes = new Date();          // aktuální datum a čas v počítači
+      const cislo_dne = dnes.getDay();  // číslo 0-6
+      vysledek.textContent = dny[cislo_dne];
+    });
+  </script>
+</body>
+</html>
