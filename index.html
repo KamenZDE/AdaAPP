@@ -205,6 +205,41 @@
     pointer-events: none;
   }
 
+  /* ---- padajici srdicka v pozadi ---- */
+
+  .padajici {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;      /* srdicka nesmi delat posuvniky */
+    pointer-events: none;  /* aby neprekazela klikani */
+    z-index: 0;            /* nad zari, pod textem */
+  }
+
+  .padajici svg {
+    position: absolute;
+    top: -10vh;            /* start kousek nad hornim okrajem */
+    color: var(--zelena-svetla);
+    animation-name: padani;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+
+  /* Promenne --vrchol, --posun a --otoceni nastavuje kazdemu srdicku
+     JavaScript zvlast, takze zadna dve nepadaji uplne stejne. */
+  @keyframes padani {
+    0%   { transform: translate(0, 0) rotate(0deg);                              opacity: 0; }
+    12%  {                                                                        opacity: var(--vrchol); }
+    88%  {                                                                        opacity: var(--vrchol); }
+    100% { transform: translate(var(--posun), 118vh) rotate(var(--otoceni));     opacity: 0; }
+  }
+
+  /* Kdo ma v systemu vypnute animace, dostane klidnou stranku. */
+  @media (prefers-reduced-motion: reduce) {
+    .srdce,
+    .padajici svg,
+    #hvezdy span { animation: none; }
+  }
+
   .radek-jmena {
     position: relative;
     z-index: 1;
@@ -318,6 +353,7 @@
 <!-- ============ 2. OBRAZOVKA: ADA ============ -->
 <main class="obrazovka" id="hlavni">
   <div class="zare"></div>
+  <div class="padajici" id="padajici" aria-hidden="true"></div>
 
   <div class="radek-jmena">
     <svg class="srdce vlevo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -354,6 +390,47 @@ for (let i = 0; i < 70; i++) {
   h.style.animationDelay = (Math.random() * 4).toFixed(2) + "s";
 
   hvezdy.appendChild(h);
+}
+
+
+/* ------- padajici srdicka na zelene obrazovce ------- */
+
+// Stejny tvar srdce jako ta dve velka vedle jmena.
+const CESTA_SRDCE = "M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z";
+
+function vyrobPadajiciSrdicka(pocet) {
+  const vrstva = document.getElementById("padajici");
+  const NS = "http://www.w3.org/2000/svg";
+
+  for (let i = 0; i < pocet; i++) {
+    // SVG se musi vyrabet pres createElementNS, jinak ho prohlizec nevykresli
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("fill", "currentColor");
+
+    const cesta = document.createElementNS(NS, "path");
+    cesta.setAttribute("d", CESTA_SRDCE);
+    svg.appendChild(cesta);
+
+    const velikost = (9 + Math.random() * 17).toFixed(1);
+
+    svg.style.width  = velikost + "px";
+    svg.style.height = velikost + "px";
+    svg.style.left   = (Math.random() * 100).toFixed(2) + "%";
+
+    // kazde srdicko pada jinak dlouho
+    svg.style.animationDuration = (12 + Math.random() * 12).toFixed(1) + "s";
+
+    // zaporne zpozdeni = animace uz bezi od prostredka,
+    // takze po odemceni nekouka uzivatel na prazdnou obrazovku
+    svg.style.animationDelay = (-Math.random() * 24).toFixed(1) + "s";
+
+    svg.style.setProperty("--vrchol",  (0.10 + Math.random() * 0.18).toFixed(2));
+    svg.style.setProperty("--posun",   (Math.random() * 90 - 45).toFixed(0) + "px");
+    svg.style.setProperty("--otoceni", (Math.random() * 100 - 50).toFixed(0) + "deg");
+
+    vrstva.appendChild(svg);
+  }
 }
 
 
@@ -407,6 +484,7 @@ function odemkni() {
   setTimeout(function () {
     zamek.style.display = "none";
     hlavni.classList.add("vidno");
+    vyrobPadajiciSrdicka(26);   // az tady, drive by padala do skryte stranky
   }, 700);
 }
 
