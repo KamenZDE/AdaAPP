@@ -233,6 +233,37 @@
     100% { transform: translate(var(--posun), 118vh) rotate(var(--otoceni));     opacity: 0; }
   }
 
+  /* ---- srdicko vyletajici z tlacitka ---- */
+
+  .vyletajici {
+    position: absolute;
+    color: var(--zelena-svetla);
+    pointer-events: none;
+    z-index: 2;                    /* nad textem, at je videt */
+    animation: vylet 1.5s ease-out forwards;
+  }
+
+  @keyframes vylet {
+    0%   { transform: translate(-50%, -50%) scale(.3) rotate(0deg);  opacity: 0; }
+    18%  { transform: translate(-50%, -50%) scale(1)  rotate(0deg);  opacity: .95; }
+    100% { transform: translate(calc(-50% + var(--unik)), calc(-50% - 165px))
+                     scale(.7) rotate(var(--otoc));                  opacity: 0; }
+  }
+
+  /* ---- pozdrav podle denni doby ---- */
+
+  .pozdrav {
+    position: relative;
+    z-index: 1;
+    font-size: 13px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: rgba(167, 243, 208, .6);
+    margin: 0 0 20px;
+    animation: naskoceni .9s ease both;
+    animation-delay: .35s;         /* prijde chvilku po jmenu */
+  }
+
   /* Kdo ma v systemu vypnute animace, dostane klidnou stranku. */
   @media (prefers-reduced-motion: reduce) {
     .srdce,
@@ -355,6 +386,8 @@
   <div class="zare"></div>
   <div class="padajici" id="padajici" aria-hidden="true"></div>
 
+  <p class="pozdrav" id="pozdrav"></p>
+
   <div class="radek-jmena">
     <svg class="srdce vlevo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
@@ -398,20 +431,30 @@ for (let i = 0; i < 70; i++) {
 // Stejny tvar srdce jako ta dve velka vedle jmena.
 const CESTA_SRDCE = "M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z";
 
-function vyrobPadajiciSrdicka(pocet) {
-  const vrstva = document.getElementById("padajici");
+// Vyrobi jedno prazdne SVG srdicko. SVG se musi delat pres createElementNS,
+// jinak ho prohlizec nevykresli. Pouzivaji to padajici i vyletajici srdicka.
+function noveSrdce() {
   const NS = "http://www.w3.org/2000/svg";
 
+  const svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "currentColor");
+
+  const cesta = document.createElementNS(NS, "path");
+  cesta.setAttribute("d", CESTA_SRDCE);
+  svg.appendChild(cesta);
+
+  return svg;
+}
+
+// Ma uzivatel v systemu vypnute animace?
+const klidnyRezim = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function vyrobPadajiciSrdicka(pocet) {
+  const vrstva = document.getElementById("padajici");
+
   for (let i = 0; i < pocet; i++) {
-    // SVG se musi vyrabet pres createElementNS, jinak ho prohlizec nevykresli
-    const svg = document.createElementNS(NS, "svg");
-    svg.setAttribute("viewBox", "0 0 24 24");
-    svg.setAttribute("fill", "currentColor");
-
-    const cesta = document.createElementNS(NS, "path");
-    cesta.setAttribute("d", CESTA_SRDCE);
-    svg.appendChild(cesta);
-
+    const svg = noveSrdce();
     const velikost = (9 + Math.random() * 17).toFixed(1);
 
     svg.style.width  = velikost + "px";
@@ -431,6 +474,50 @@ function vyrobPadajiciSrdicka(pocet) {
 
     vrstva.appendChild(svg);
   }
+}
+
+
+/* ------- srdicko vyletajici z tlacitka ------- */
+
+function vypustSrdicko() {
+  if (klidnyRezim) return;
+
+  const tlac = document.getElementById("tlacitko");
+  const misto = tlac.getBoundingClientRect();
+  const svg = noveSrdce();
+
+  svg.classList.add("vyletajici");
+
+  const velikost = (16 + Math.random() * 8).toFixed(1);
+  svg.style.width  = velikost + "px";
+  svg.style.height = velikost + "px";
+
+  // #hlavni je fixed pres celou obrazovku, takze souradnice okna
+  // se rovnaji souradnicim uvnitr nej
+  svg.style.left = (misto.left + misto.width / 2) + "px";
+  svg.style.top  = (misto.top + misto.height / 2) + "px";
+
+  svg.style.setProperty("--unik", (Math.random() * 70 - 35).toFixed(0) + "px");
+  svg.style.setProperty("--otoc", (Math.random() * 80 - 40).toFixed(0) + "deg");
+
+  // po dolétnutí srdicko zmizi z HTML, at se stranka nezanasi
+  svg.addEventListener("animationend", function () {
+    svg.remove();
+  });
+
+  document.getElementById("hlavni").appendChild(svg);
+}
+
+
+/* ------- pozdrav podle denni doby ------- */
+
+function pozdravPodleHodiny() {
+  const hodina = new Date().getHours();
+
+  if (hodina >= 5  && hodina < 11) return "Dobré ráno";
+  if (hodina >= 11 && hodina < 18) return "Hezký den";
+  if (hodina >= 18 && hodina < 22) return "Dobrý večer";
+  return "Dobrou noc";
 }
 
 
@@ -485,6 +572,7 @@ function odemkni() {
     zamek.style.display = "none";
     hlavni.classList.add("vidno");
     vyrobPadajiciSrdicka(26);   // az tady, drive by padala do skryte stranky
+    document.getElementById("pozdrav").textContent = pozdravPodleHodiny();
   }, 700);
 }
 
@@ -532,6 +620,8 @@ tlacitko.addEventListener("click", function () {
 
   posledni = index;
   hlaska.textContent = hlasky[index];
+
+  vypustSrdicko();
 
   // stejny trik jako u zatreseni - restart animace
   hlaska.classList.remove("naskoc");
