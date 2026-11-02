@@ -531,6 +531,121 @@
   /* ---- oblibene hlasky ---- */
 
   /* srdicko pod hlaskou - prazdne obrys, po ulozeni vyplnene */
+  /* ================= ROZHOVOR ================= */
+
+  /* vstup do rozhovoru - tise, aby neprebijel hlavni tlacitko */
+  .vstup-rozhovoru {
+    position: relative;
+    z-index: 1;
+    margin-top: 26px;
+    padding: 11px 22px;
+    font-family: var(--sans);
+    font-size: 14px;
+    letter-spacing: .04em;
+    color: var(--zelena-svetla);
+    background: transparent;
+    border: 1px solid rgba(110,231,183,.3);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background .25s, border-color .25s, transform .14s;
+  }
+
+  .vstup-rozhovoru:hover  { background: rgba(110,231,183,.08); border-color: rgba(110,231,183,.6); }
+  .vstup-rozhovoru:active { transform: scale(.97); }
+
+  /* Behem rozhovoru se bezne ovladani schova, at se to neprekryva. */
+  #hlavni.rozhovor-bezi #tlacitko,
+  #hlavni.rozhovor-bezi #hlaska,
+  #hlavni.rozhovor-bezi .srdce-ulozit,
+  #hlavni.rozhovor-bezi .darek,
+  #hlavni.rozhovor-bezi .vstup-rozhovoru { display: none; }
+
+  #rozhovor { display: none; }
+
+  #hlavni.rozhovor-bezi #rozhovor {
+    display: block;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 440px;
+    margin-top: 10px;
+  }
+
+  .odpoved-rozhovoru {
+    margin: 0 0 30px;
+    font-family: var(--serif);
+    font-size: clamp(22px, 5.6vw, 29px);
+    line-height: 1.45;
+    color: #fff;
+    white-space: pre-line;          /* zalomeni ve dvou vetach zustane */
+    animation: naskoceni .7s ease both;
+  }
+
+  .odpoved-rozhovoru:empty { display: none; }
+
+  .otazka-rozhovoru {
+    margin: 0 0 20px;
+    font-family: var(--sans);
+    font-size: 13px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: rgba(215,251,233,.55);
+    animation: naskoceni .7s ease both;
+    animation-delay: .15s;
+  }
+
+  .otazka-rozhovoru:empty { display: none; }
+
+  .volby-rozhovoru {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    animation: naskoceni .7s ease both;
+    animation-delay: .25s;
+  }
+
+  .volby-rozhovoru button {
+    font-family: var(--sans);
+    font-size: 15px;
+    padding: 12px 24px;
+    color: #04231a;
+    background: linear-gradient(180deg, var(--zelena-svetla), var(--zelena));
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform .14s;
+  }
+
+  .volby-rozhovoru button:active { transform: scale(.96); }
+
+  /* odchod z rozhovoru - objevi se az na konci a potichu */
+  .zpet-rozhovor {
+    margin-top: 34px;
+    padding: 8px 16px;
+    font-family: var(--sans);
+    font-size: 12px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--text-zeleny);
+    background: none;
+    border: none;
+    opacity: 0;
+    cursor: pointer;
+    transition: opacity 1.4s ease;
+  }
+
+  .zpet-rozhovor.vidno { opacity: .4; }
+  .zpet-rozhovor.vidno:hover { opacity: .8; }
+
+  /* Kdyz rozhovor nepomohl, stranka prestane hrat:
+     srdicka i zare se ztlumi. Zadne gesto navic, jen se to zklidni. */
+  #hlavni.ztiseno .padajici { opacity: .3; }
+  #hlavni.ztiseno .zare     { opacity: .35; }
+
+  #hlavni .padajici,
+  #hlavni .zare { transition: opacity 2.5s ease; }
+
   .srdce-ulozit {
     position: relative;
     z-index: 1;
@@ -740,6 +855,16 @@
       <path d="M12 20.8l-1.35-1.23C5.4 14.9 2 11.9 2 8.3 2 5.4 4.3 3.1 7.2 3.1c1.6 0 3.2.76 4.3 2 1.1-1.24 2.7-2 4.3-2 2.9 0 5.2 2.3 5.2 5.2 0 3.6-3.4 6.6-8.65 11.27L12 20.8z"/>
     </svg>
   </button>
+
+  <button class="vstup-rozhovoru" id="vstup-rozhovoru">Jak se cítíš?</button>
+
+  <!-- rozhovor - objevi se misto bezneho ovladani -->
+  <div id="rozhovor">
+    <p class="odpoved-rozhovoru" id="odpoved-rozhovoru"></p>
+    <p class="otazka-rozhovoru" id="otazka-rozhovoru"></p>
+    <div class="volby-rozhovoru" id="volby-rozhovoru"></div>
+    <button class="zpet-rozhovor" id="zpet-rozhovor">Zpět</button>
+  </div>
 
   <button class="odkaz-oblibene" id="odkaz-oblibene" hidden>Uložené</button>
 
@@ -1200,7 +1325,114 @@ obalOblibene.addEventListener("click", function (udalost) {
 obnovOdkaz();   // pri nacteni ukazat pocet, pokud uz neco ulozeneho je
 
 
-/* ---------------- 5. darek ---------------- */
+/* ---------------- 5. rozhovor ----------------
+   Vsechny texty jsou tady pohromade, at se daji menit na jednom miste.
+   "konec: true" znamena, ze vetev koncí - zadna dalsi otazka. */
+
+const ROZHOVOR = {
+  uvod: {
+    otazka: "Jak se cítíš?",
+    volby: [
+      { text: "Dobře",      kam: "dobre" },
+      { text: "Nic moc",    kam: "nicmoc" },
+      { text: "Je mi blbě", kam: "blbe" }
+    ]
+  },
+
+  dobre: {
+    odpoved: "To jsem rád.\nTak jen ať to vydrží.",
+    konec: true
+  },
+
+  nicmoc: {
+    odpoved: "Nic moc je taky v pořádku. Nemusí být každý den dobrý.",
+    otazka: "A teď?",
+    volby: [
+      { text: "Líp",      kam: "lip_nicmoc" },
+      { text: "Pořád ne", kam: "porad_ne" }
+    ]
+  },
+
+  blbe: {
+    odpoved: "To mě mrzí. Nebudu ti říkat, ať to pustíš z hlavy — to stejně nefunguje.\nJen ať víš, že tě mám rád i ve dnech, co stojí za nic.",
+    otazka: "A teď?",
+    volby: [
+      { text: "Líp",      kam: "lip_blbe" },
+      { text: "Pořád ne", kam: "porad_ne" }
+    ]
+  },
+
+  lip_nicmoc: {
+    odpoved: "Tak to beru. Někdy stačí, že to někdo ví.",
+    konec: true
+  },
+
+  lip_blbe: {
+    odpoved: "Dobře. Nemusí to být o moc, stačí o kousek.",
+    konec: true
+  },
+
+  porad_ne: {
+    odpoved: "Tak to nechme být. Nemusíš se z toho dostat dneska, ani mi odpovídat.\nAle napiš mi, kdybys chtěla.",
+    konec: true,
+    ztisit: true     // stranka se u toho zklidni
+  }
+};
+
+const vstupRozhovoru = document.getElementById("vstup-rozhovoru");
+const odpovedEl      = document.getElementById("odpoved-rozhovoru");
+const otazkaEl       = document.getElementById("otazka-rozhovoru");
+const volbyEl        = document.getElementById("volby-rozhovoru");
+const zpetEl         = document.getElementById("zpet-rozhovor");
+
+let casovacZpet = null;
+
+function ukazKrok(klic) {
+  const krok = ROZHOVOR[klic];
+  if (!krok) return;
+
+  odpovedEl.textContent = krok.odpoved || "";
+  otazkaEl.textContent  = krok.otazka  || "";
+
+  volbyEl.innerHTML = "";
+
+  (krok.volby || []).forEach(function (volba) {
+    const b = document.createElement("button");
+    b.textContent = volba.text;
+    b.addEventListener("click", function () { ukazKrok(volba.kam); });
+    volbyEl.appendChild(b);
+  });
+
+  if (krok.ztisit) hlavni.classList.add("ztiseno");
+
+  // Na konci vetve se nic dalsiho nenabizi. Odchod se objevi
+  // az po chvili, aby to nevypadalo, ze ji nekdo pobízí pryc.
+  clearTimeout(casovacZpet);
+  zpetEl.classList.remove("vidno");
+
+  if (krok.konec) {
+    casovacZpet = setTimeout(function () {
+      zpetEl.classList.add("vidno");
+    }, 3500);
+  }
+}
+
+function otevriRozhovor() {
+  hlavni.classList.add("rozhovor-bezi");
+  ukazKrok("uvod");
+}
+
+function zavriRozhovor() {
+  clearTimeout(casovacZpet);
+  hlavni.classList.remove("rozhovor-bezi", "ztiseno");
+  zpetEl.classList.remove("vidno");
+}
+
+vstupRozhovoru.addEventListener("click", otevriRozhovor);
+zpetEl.addEventListener("click", zavriRozhovor);
+
+
+/* ---------------- 6. darek ---------------- */
 
 const darek     = document.getElementById("darek");
 const obalDarku = document.getElementById("obal-darku");
@@ -1217,7 +1449,7 @@ obalDarku.addEventListener("click", function (udalost) {
 });
 
 
-/* ---------------- 6. Escape zavira oba prekryvy ---------------- */
+/* ---------------- 7. Escape zavira prekryvy ---------------- */
 
 document.addEventListener("keydown", function (udalost) {
   if (udalost.key !== "Escape") return;
