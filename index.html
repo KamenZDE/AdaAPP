@@ -561,6 +561,28 @@
   }
 
   /* odkaz dole - mimo stredovy sloupec, aby nerozhazel kompozici */
+  /* ---- pocitadlo dni od ohne ---- */
+
+  /* Nahore, stejne tise jako "Ulozene" dole - spolu delaji ramec
+     kolem stredove kompozice a nelezou mezi jmeno a tlacitko. */
+  .pocitadlo {
+    position: absolute;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+    margin: 0;
+    font-family: var(--sans);
+    font-size: 12px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--text-zeleny);
+    opacity: .35;
+    animation: naskoceni 1.2s ease both;
+    animation-delay: .6s;          /* prichazi az po jmenu i pozdravu */
+  }
+
   .odkaz-oblibene {
     position: absolute;
     bottom: 24px;
@@ -689,6 +711,8 @@
 <main class="obrazovka" id="hlavni">
   <div class="zare"></div>
   <div class="padajici" id="padajici" aria-hidden="true"></div>
+
+  <p class="pocitadlo" id="pocitadlo"></p>
 
   <p class="pozdrav" id="pozdrav"></p>
 
@@ -863,6 +887,39 @@ function pozdravPodleHodiny() {
 }
 
 
+/* ------- pocitadlo dni od ohne ------- */
+
+// 27. cervna 2026. Mesice se v JavaScriptu cisluji od nuly, cerven je 5.
+const DEN_OHNE = new Date(2026, 5, 27);
+
+function dniOdOhne() {
+  const dnes = new Date();
+
+  // Obe data srovnana na pulnoc. Bez toho by to pocitalo hodiny
+  // a pres zmenu casu by to obcas ukazalo den navic nebo min.
+  const od = new Date(DEN_OHNE.getFullYear(), DEN_OHNE.getMonth(), DEN_OHNE.getDate());
+  const do_ = new Date(dnes.getFullYear(), dnes.getMonth(), dnes.getDate());
+
+  return Math.round((do_ - od) / 86400000);
+}
+
+// cesky: 1 den, 2-4 dny, 5 a vic dni
+function sklonujDny(pocet) {
+  if (pocet === 1) return "den";
+  if (pocet >= 2 && pocet <= 4) return "dny";
+  return "dní";
+}
+
+function textPocitadla() {
+  const dni = dniOdOhne();
+
+  if (dni < 0)  return "";          // kdyby mel nekdo v telefonu spatne datum
+  if (dni === 0) return "Dnes u ohně";
+
+  return dni + " " + sklonujDny(dni) + " od ohně";
+}
+
+
 /* ------- narozeninovy rezim ------- */
 
 // Bezi 16.-18. rijna. Rok se nekontroluje schvalne -
@@ -948,6 +1005,8 @@ function zobrazHlavni() {
   zamek.style.display = "none";
   hlavni.classList.add("vidno");
   vyrobPadajiciSrdicka(26);   // az tady, drive by padala do skryte stranky
+
+  document.getElementById("pocitadlo").textContent = textPocitadla();
 
   if (jeNarozeninovyRezim()) {
     hlavni.classList.add("narozeniny");
