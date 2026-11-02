@@ -680,37 +680,50 @@
 
   /* Nahore, stejne tise jako "Ulozene" dole - spolu delaji ramec
      kolem stredove kompozice a nelezou mezi jmeno a tlacitko. */
+  /* Centruje se pres left:0 + right:0 + text-align, NE pres transform.
+     Transform by nam prepsala animace naskoceni (ta taky nastavuje
+     transform) a radek by se posunul o pulku sve sirky doprava. */
   .pocitadlo {
     position: absolute;
-    top: 24px;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 22px;
+    left: 0;
+    right: 0;
     z-index: 1;
     margin: 0;
+    text-align: center;
     font-family: var(--sans);
-    font-size: 12px;
-    letter-spacing: .16em;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: .18em;
     text-transform: uppercase;
-    white-space: nowrap;
-    color: var(--text-zeleny);
-    opacity: .35;
-    animation: naskoceni 1.2s ease both;
+    color: var(--zelena-svetla);
+    text-shadow: 0 0 18px rgba(52,211,153,.35);
+    animation: pocitadlo-naskoc 1.2s ease both;
     animation-delay: .6s;          /* prichazi az po jmenu i pozdravu */
   }
 
+  /* Vlastni keyframy, aby koncova pruhlednost zustala takova,
+     jakou chceme - sdilena "naskoceni" konci na plnych 100 %. */
+  @keyframes pocitadlo-naskoc {
+    from { opacity: 0;   transform: translateY(10px); }
+    to   { opacity: .75; transform: translateY(0); }
+  }
+
+  /* stejne centrovani jako u pocitadla, at se to chova predvidatelne */
   .odkaz-oblibene {
     position: absolute;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: 22px;
+    left: 0;
+    right: 0;
     z-index: 1;
+    width: 100%;
     font-family: var(--sans);
     font-size: 13px;
-    letter-spacing: .1em;
+    letter-spacing: .12em;
     text-transform: uppercase;
     padding: 8px 14px;
     color: var(--text-zeleny);
-    opacity: .45;
+    opacity: .55;
     background: none;
     border: none;
     cursor: pointer;
