@@ -9,6 +9,29 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&display=swap" rel="stylesheet">
 
+<script>
+/* Tenhle kousek musi byt v hlavicce a ne dole u zbytku skriptu.
+   Rozhoduje se tu, jestli uz prohlizec heslo zadal - a kdyby to bezelo
+   az na konci stranky, zamek by na okamzik probliknul, nez by zmizel. */
+(function () {
+  var KLIC = "adaapp-odemceno";
+
+  try {
+    // adresa s ?znovu na konci odemceni zapomene a ukaze zamek
+    if (location.search.indexOf("znovu") !== -1) {
+      localStorage.removeItem(KLIC);
+      return;
+    }
+
+    if (localStorage.getItem(KLIC) === "ano") {
+      document.documentElement.classList.add("odemceno");
+    }
+  } catch (chyba) {
+    // anonymni okno nebo zakazane uloziste - proste se zepta na heslo
+  }
+})();
+</script>
+
 <style>
   /* ---------- barvy a pisma na jednom miste ---------- */
   :root {
@@ -57,6 +80,10 @@
     background: radial-gradient(ellipse at 50% 35%, #131c2e 0%, var(--cerna-mekka) 45%, var(--cerna) 100%);
     color: #e8eef7;
   }
+
+  /* Uz zadane heslo: zamek se nevykresli vubec. Tridu nastavuje
+     skript v hlavicce jeste pred prvnim vykreslenim stranky. */
+  html.odemceno #zamek { display: none; }
 
   /* hvezdicky v pozadi - vyrabi je JavaScript */
   #hvezdy {
@@ -722,7 +749,26 @@ const form   = document.getElementById("form-hesla");
 const vstup  = document.getElementById("heslo");
 const chyba  = document.getElementById("chyba");
 
-vstup.focus();
+/* ---- zapamatovani odemceni ----
+   Prohlizec si nechava poznamku primo v telefonu. Neuklada se heslo,
+   jen priznak "tenhle prohlizec uz heslo zadal". Nikam se neposila.
+
+   Jestli uz zadane bylo, rozhodl skript v hlavicce - viz trida
+   "odemceno" na elementu <html>. Tady uz se jen zapisuje. */
+
+const KLIC_ODEMCENI = "adaapp-odemceno";
+
+function zapamatujOdemceni() {
+  try {
+    localStorage.setItem(KLIC_ODEMCENI, "ano");
+  } catch (chyba) {
+    // anonymni okno nebo zakazane uloziste - priste se zepta znovu
+  }
+}
+
+function uzByloOdemceno() {
+  return document.documentElement.classList.contains("odemceno");
+}
 
 function zkusHeslo() {
   if (vstup.value.trim().toLowerCase() === HESLO) {
@@ -755,22 +801,37 @@ vstup.addEventListener("keydown", function (udalost) {
   }
 });
 
+// Samotne zobrazeni hlavni obrazovky. Volaji to dve cesty:
+// po zadani hesla (s prolnutim zamku) a hned po nacteni (kdyz uz je zapamatovano).
+function zobrazHlavni() {
+  zamek.style.display = "none";
+  hlavni.classList.add("vidno");
+  vyrobPadajiciSrdicka(26);   // az tady, drive by padala do skryte stranky
+
+  if (jeNarozeninovyRezim()) {
+    hlavni.classList.add("narozeniny");
+    document.getElementById("pozdrav").textContent = "Všechno nejlepší";
+  } else {
+    document.getElementById("pozdrav").textContent = pozdravPodleHodiny();
+  }
+}
+
 function odemkni() {
+  zapamatujOdemceni();
+
   zamek.style.transition = "opacity .7s ease";
   zamek.style.opacity = "0";
 
-  setTimeout(function () {
-    zamek.style.display = "none";
-    hlavni.classList.add("vidno");
-    vyrobPadajiciSrdicka(26);   // az tady, drive by padala do skryte stranky
+  setTimeout(zobrazHlavni, 700);
+}
 
-    if (jeNarozeninovyRezim()) {
-      hlavni.classList.add("narozeniny");
-      document.getElementById("pozdrav").textContent = "Všechno nejlepší";
-    } else {
-      document.getElementById("pozdrav").textContent = pozdravPodleHodiny();
-    }
-  }, 700);
+
+/* ---- start stranky ---- */
+
+if (uzByloOdemceno()) {
+  zobrazHlavni();     // zamek se vubec neukaze, ani neproblikne
+} else {
+  vstup.focus();
 }
 
 
