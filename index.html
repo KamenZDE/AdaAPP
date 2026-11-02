@@ -460,7 +460,10 @@
 
   /* ---- vzkaz po rozbaleni ---- */
 
-  .obal-darku {
+  /* Spolecny prekryv pro darek i pro seznam oblibenych.
+     Chovaji se stejne, lisi se jen barvou karty. */
+  .obal-darku,
+  .obal-oblibene {
     position: fixed;
     inset: 0;
     z-index: 5;
@@ -468,11 +471,14 @@
     align-items: center;
     justify-content: center;
     padding: 24px;
-    background: rgba(12, 8, 2, .88);
+    background: rgba(4, 12, 9, .88);
     backdrop-filter: blur(6px);
   }
 
-  .obal-darku.vidno {
+  .obal-darku { background: rgba(12, 8, 2, .88); }
+
+  .obal-darku.vidno,
+  .obal-oblibene.vidno {
     display: flex;
     animation: prolnuti .5s ease both;
   }
@@ -482,14 +488,20 @@
     width: 100%;
     max-width: 430px;
     max-height: 80vh;
-    overflow-y: auto;              /* delsi vzkaz jde odrolovat */
+    overflow-y: auto;              /* delsi obsah jde odrolovat */
     padding: 40px 32px 34px;
     text-align: left;
-    background: linear-gradient(170deg, #35250b 0%, #231806 100%);
-    border: 1px solid rgba(252,217,122,.3);
+    background: linear-gradient(170deg, #0d3828 0%, #072017 100%);
+    border: 1px solid rgba(110,231,183,.28);
     border-radius: 16px;
     box-shadow: 0 24px 70px rgba(0,0,0,.6);
     animation: karta-naskoc .6s cubic-bezier(.2,.9,.3,1.1) both;
+  }
+
+  /* zlata varianta - pouziva ji jen darek */
+  .karta.zlata {
+    background: linear-gradient(170deg, #35250b 0%, #231806 100%);
+    border-color: rgba(252,217,122,.3);
   }
 
   @keyframes karta-naskoc {
@@ -514,6 +526,117 @@
   }
 
   .zavrit:hover { color: #fdf3dd; background: rgba(252,217,122,.12); }
+
+
+  /* ---- oblibene hlasky ---- */
+
+  /* srdicko pod hlaskou - prazdne obrys, po ulozeni vyplnene */
+  .srdce-ulozit {
+    position: relative;
+    z-index: 1;
+    margin-top: 12px;
+    padding: 6px;
+    line-height: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  .srdce-ulozit svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: var(--zelena-svetla);
+    stroke-width: 1.6;
+    opacity: .4;
+    transition: opacity .2s, fill .2s, transform .15s;
+  }
+
+  .srdce-ulozit:hover svg  { opacity: .75; }
+  .srdce-ulozit:active svg { transform: scale(.85); }
+
+  .srdce-ulozit.aktivni svg {
+    fill: var(--zelena-svetla);
+    opacity: 1;
+  }
+
+  /* odkaz dole - mimo stredovy sloupec, aby nerozhazel kompozici */
+  .odkaz-oblibene {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+    font-family: var(--sans);
+    font-size: 13px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    color: var(--text-zeleny);
+    opacity: .45;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: opacity .2s;
+  }
+
+  .odkaz-oblibene:hover { opacity: .85; }
+
+  .nadpis-karty {
+    margin: 0 0 20px;
+    font-family: var(--sans);
+    font-size: 12px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: rgba(215,251,233,.5);
+  }
+
+  .seznam-oblibenych {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .seznam-oblibenych li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid rgba(110,231,183,.12);
+  }
+
+  .seznam-oblibenych li:last-child { border-bottom: none; }
+
+  .seznam-oblibenych span {
+    flex: 1;
+    font-family: var(--serif);
+    font-size: 20px;
+    color: var(--text-zeleny);
+  }
+
+  .smazat {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    font-size: 17px;
+    line-height: 1;
+    color: rgba(215,251,233,.35);
+    background: none;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: color .2s, background .2s;
+  }
+
+  .smazat:hover { color: var(--text-zeleny); background: rgba(110,231,183,.12); }
+
+  .prazdno {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: 19px;
+    line-height: 1.55;
+    color: rgba(215,251,233,.65);
+  }
 
   .vzkaz {
     font-family: var(--serif);
@@ -585,8 +708,16 @@
 
   <div class="carka"></div>
 
-  <button id="tlacitko">Klikni sem</button>
+  <button id="tlacitko">Potřebuju slyšet</button>
   <p id="hlaska"></p>
+
+  <button class="srdce-ulozit" id="srdce-ulozit" aria-label="Uložit hlášku" hidden>
+    <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 20.8l-1.35-1.23C5.4 14.9 2 11.9 2 8.3 2 5.4 4.3 3.1 7.2 3.1c1.6 0 3.2.76 4.3 2 1.1-1.24 2.7-2 4.3-2 2.9 0 5.2 2.3 5.2 5.2 0 3.6-3.4 6.6-8.65 11.27L12 20.8z"/>
+    </svg>
+  </button>
+
+  <button class="odkaz-oblibene" id="odkaz-oblibene" hidden>Uložené</button>
 
   <button class="darek" id="darek">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
@@ -599,9 +730,19 @@
   </button>
 </main>
 
+<!-- seznam ulozenych hlasek -->
+<div class="obal-oblibene" id="obal-oblibene">
+  <div class="karta" role="dialog" aria-modal="true" aria-label="Uložené hlášky">
+    <button class="zavrit" id="zavrit-oblibene" aria-label="Zavřít">&times;</button>
+    <p class="nadpis-karty">Co sis schovala</p>
+    <ul class="seznam-oblibenych" id="seznam-oblibenych"></ul>
+    <p class="prazdno" id="prazdno-oblibene" hidden>Zatím nic. Ťukni na srdíčko pod hláškou a uloží se ti sem.</p>
+  </div>
+</div>
+
 <!-- vzkaz, ktery se objevi po rozbaleni darku -->
 <div class="obal-darku" id="obal-darku">
-  <div class="karta" role="dialog" aria-modal="true" aria-label="Vzkaz">
+  <div class="karta zlata" role="dialog" aria-modal="true" aria-label="Vzkaz">
     <button class="zavrit" id="zavrit-darku" aria-label="Zavřít">&times;</button>
     <p class="vzkaz" id="vzkaz-darku">Dnešní ráno nedopadlo úplně dobře a za to jsem se už omluvil. Doufám, že večer bude lepší a že se ti bude líbit dárek, který ode mě máš. Mám tě nejradši, záleží mi na tobě a vážím si tě ❤️</p>
   </div>
@@ -888,6 +1029,9 @@ tlacitko.addEventListener("click", function () {
 
   vypustSrdicko();
 
+  srdceUlozit.hidden = false;   // pred prvnim klikem nema co ukladat
+  obnovSrdceUlozit();
+
   // stejny trik jako u zatreseni - restart animace
   hlaska.classList.remove("naskoc");
   void hlaska.offsetWidth;
@@ -895,7 +1039,109 @@ tlacitko.addEventListener("click", function () {
 });
 
 
-/* ---------------- 4. darek ---------------- */
+/* ---------------- 4. oblibene hlasky ----------------
+   Ulozene hlasky zustavaji v telefonu, stejne jako odemceni.
+   Nikam se neposilaji - je to jen pro ni. */
+
+const KLIC_OBLIBENE  = "adaapp-oblibene";
+
+const srdceUlozit    = document.getElementById("srdce-ulozit");
+const odkazOblibene  = document.getElementById("odkaz-oblibene");
+const obalOblibene   = document.getElementById("obal-oblibene");
+const seznamOblibene = document.getElementById("seznam-oblibenych");
+const prazdnoText    = document.getElementById("prazdno-oblibene");
+
+function nactiOblibene() {
+  try {
+    const ulozene = JSON.parse(localStorage.getItem(KLIC_OBLIBENE));
+    return Array.isArray(ulozene) ? ulozene : [];
+  } catch (chyba) {
+    return [];   // zakazane uloziste nebo poskozena data
+  }
+}
+
+function ulozOblibene(seznam) {
+  try {
+    localStorage.setItem(KLIC_OBLIBENE, JSON.stringify(seznam));
+  } catch (chyba) {}
+}
+
+// srdicko pod hlaskou: vyplnene = ulozena
+function obnovSrdceUlozit() {
+  const ulozena = nactiOblibene().indexOf(hlaska.textContent) !== -1;
+  srdceUlozit.classList.toggle("aktivni", ulozena);
+  srdceUlozit.setAttribute("aria-label", ulozena ? "Odebrat z uložených" : "Uložit hlášku");
+}
+
+function obnovOdkaz() {
+  const pocet = nactiOblibene().length;
+  odkazOblibene.hidden = pocet === 0;
+  odkazOblibene.textContent = "Uložené (" + pocet + ")";
+}
+
+srdceUlozit.addEventListener("click", function () {
+  const text = hlaska.textContent;
+  if (!text) return;
+
+  const seznam = nactiOblibene();
+  const kde = seznam.indexOf(text);
+
+  if (kde === -1) seznam.push(text);
+  else seznam.splice(kde, 1);
+
+  ulozOblibene(seznam);
+  obnovSrdceUlozit();
+  obnovOdkaz();
+});
+
+function vykresliOblibene() {
+  const seznam = nactiOblibene();
+
+  seznamOblibene.innerHTML = "";
+  prazdnoText.hidden = seznam.length > 0;
+
+  seznam.forEach(function (text) {
+    const radek = document.createElement("li");
+
+    const popisek = document.createElement("span");
+    popisek.textContent = text;   // textContent, ne innerHTML
+
+    const smazat = document.createElement("button");
+    smazat.className = "smazat";
+    smazat.textContent = "×";
+    smazat.setAttribute("aria-label", "Odebrat");
+
+    smazat.addEventListener("click", function () {
+      ulozOblibene(nactiOblibene().filter(function (p) { return p !== text; }));
+      vykresliOblibene();
+      obnovOdkaz();
+      obnovSrdceUlozit();
+    });
+
+    radek.appendChild(popisek);
+    radek.appendChild(smazat);
+    seznamOblibene.appendChild(radek);
+  });
+}
+
+function otevriOblibene() {
+  vykresliOblibene();
+  obalOblibene.classList.add("vidno");
+}
+
+function zavriOblibene() { obalOblibene.classList.remove("vidno"); }
+
+odkazOblibene.addEventListener("click", otevriOblibene);
+document.getElementById("zavrit-oblibene").addEventListener("click", zavriOblibene);
+
+obalOblibene.addEventListener("click", function (udalost) {
+  if (udalost.target === obalOblibene) zavriOblibene();
+});
+
+obnovOdkaz();   // pri nacteni ukazat pocet, pokud uz neco ulozeneho je
+
+
+/* ---------------- 5. darek ---------------- */
 
 const darek     = document.getElementById("darek");
 const obalDarku = document.getElementById("obal-darku");
@@ -911,9 +1157,13 @@ obalDarku.addEventListener("click", function (udalost) {
   if (udalost.target === obalDarku) zavriDarek();
 });
 
-// a klavesa Escape
+
+/* ---------------- 6. Escape zavira oba prekryvy ---------------- */
+
 document.addEventListener("keydown", function (udalost) {
-  if (udalost.key === "Escape") zavriDarek();
+  if (udalost.key !== "Escape") return;
+  zavriDarek();
+  zavriOblibene();
 });
 </script>
 
