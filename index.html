@@ -690,16 +690,34 @@
     right: 0;
     z-index: 1;
     margin: 0;
+    padding: 0 24px;
     text-align: center;
     font-family: var(--sans);
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: .18em;
-    text-transform: uppercase;
     color: var(--zelena-svetla);
-    text-shadow: 0 0 18px rgba(52,211,153,.35);
+    text-shadow: 0 0 18px rgba(52,211,153,.3);
     animation: pocitadlo-naskoc 1.2s ease both;
     animation-delay: .6s;          /* prichazi az po jmenu i pozdravu */
+  }
+
+  /* cislo nese duraz, veta je k nemu popisek */
+  .pocitadlo-cislo {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+  }
+
+  /* Vetu uz nesazim verzalkami - na celou vetu jsou neprijemne
+     a spatne se ctou. Mala pismena a uzsi blok, at se lame hezky. */
+  .pocitadlo-text {
+    display: block;
+    max-width: 320px;
+    margin: 5px auto 0;
+    font-size: 12.5px;
+    line-height: 1.5;
+    letter-spacing: .01em;
+    opacity: .75;
   }
 
   /* Vlastni keyframy, aby koncova pruhlednost zustala takova,
@@ -840,7 +858,10 @@
   <div class="zare"></div>
   <div class="padajici" id="padajici" aria-hidden="true"></div>
 
-  <p class="pocitadlo" id="pocitadlo"></p>
+  <p class="pocitadlo">
+    <span class="pocitadlo-cislo" id="pocitadlo-cislo"></span>
+    <span class="pocitadlo-text" id="pocitadlo-text"></span>
+  </p>
 
   <p class="pozdrav" id="pozdrav"></p>
 
@@ -1048,13 +1069,19 @@ function sklonujDny(pocet) {
   return "dní";
 }
 
+const UDALOST = "od toho, co jsem tě na stavbě u ohně pozval na tábor";
+
+// Vraci dve casti zvlast - cislo se sazi vetsim pismem nad vetou.
 function textPocitadla() {
   const dni = dniOdOhne();
 
-  if (dni < 0)  return "";          // kdyby mel nekdo v telefonu spatne datum
-  if (dni === 0) return "Dnes u ohně";
+  if (dni < 0)   return null;       // kdyby mel nekdo v telefonu spatne datum
+  if (dni === 0) return { cislo: "Dneska", veta: "jsem tě na stavbě u ohně pozval na tábor" };
 
-  return dni + " " + sklonujDny(dni) + " od ohně";
+  return {
+    cislo: dni + " " + sklonujDny(dni),
+    veta: UDALOST
+  };
 }
 
 
@@ -1144,7 +1171,11 @@ function zobrazHlavni() {
   hlavni.classList.add("vidno");
   vyrobPadajiciSrdicka(26);   // az tady, drive by padala do skryte stranky
 
-  document.getElementById("pocitadlo").textContent = textPocitadla();
+  const pocitadlo = textPocitadla();
+  if (pocitadlo) {
+    document.getElementById("pocitadlo-cislo").textContent = pocitadlo.cislo;
+    document.getElementById("pocitadlo-text").textContent  = pocitadlo.veta;
+  }
 
   if (jeNarozeninovyRezim()) {
     hlavni.classList.add("narozeniny");
