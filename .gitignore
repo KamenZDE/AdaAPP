@@ -8,3 +8,6 @@ desktop.ini
 
 # lokalni dev server, nepatri do repozitare
 .claude/
+
+# docasne nahledy, nepatri do repozitare
+nahled-*.html
