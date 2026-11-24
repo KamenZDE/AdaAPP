@@ -341,7 +341,7 @@
     z-index: 1;
   }
 
-  #tlacitko {
+  .hlavni-tlacitko {
     position: relative;
     z-index: 1;
     font-family: var(--sans);
@@ -358,8 +358,8 @@
     transition: transform .14s, box-shadow .25s;
   }
 
-  #tlacitko:hover  { transform: translateY(-2px); box-shadow: 0 10px 34px rgba(52,211,153,.42); }
-  #tlacitko:active { transform: translateY(0) scale(.97); }
+  .hlavni-tlacitko:hover  { transform: translateY(-2px); box-shadow: 0 10px 34px rgba(52,211,153,.42); }
+  .hlavni-tlacitko:active { transform: translateY(0) scale(.97); }
 
   #hlaska {
     position: relative;
@@ -402,12 +402,12 @@
   #hlavni.narozeniny .pozdrav    { color: rgba(253,243,221,.7); }
   #hlavni.narozeniny .carka      { background: linear-gradient(90deg, transparent, rgba(252,217,122,.6), transparent); }
 
-  #hlavni.narozeniny #tlacitko {
+  #hlavni.narozeniny .hlavni-tlacitko {
     color: #2e2008;
     box-shadow: 0 6px 26px rgba(245,183,62,.3);
   }
 
-  #hlavni.narozeniny #tlacitko:hover {
+  #hlavni.narozeniny .hlavni-tlacitko:hover {
     box-shadow: 0 10px 34px rgba(245,183,62,.45);
   }
 
@@ -554,11 +554,33 @@
   .vstup-rozhovoru:active { transform: scale(.97); }
 
   /* Behem rozhovoru se bezne ovladani schova, at se to neprekryva. */
-  #hlavni.rozhovor-bezi #tlacitko,
+  /* obe hlavni tlacitka pod sebou, stejne siroka */
+  .hlavni-tlacitka {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  #hlavni.rozhovor-bezi .hlavni-tlacitka,
   #hlavni.rozhovor-bezi #hlaska,
   #hlavni.rozhovor-bezi .srdce-ulozit,
   #hlavni.rozhovor-bezi .darek,
-  #hlavni.rozhovor-bezi .vstup-rozhovoru { display: none; }
+  #hlavni.rozhovor-bezi .vedlejsi-cesty { display: none; }
+
+  .vedlejsi-cesty {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 26px;
+  }
+
+  .vedlejsi-cesty .vstup-rozhovoru { margin-top: 0; }
 
   #rozhovor { display: none; }
 
@@ -645,6 +667,236 @@
 
   #hlavni .padajici,
   #hlavni .zare { transition: opacity 2.5s ease; }
+
+  /* ================= HRY ================= */
+
+  /* Prekryv pres celou obrazovku - hra potrebuje vic mista nez karta. */
+  .obal-hry {
+    position: fixed;
+    inset: 0;
+    z-index: 6;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 56px 14px 28px;
+    overflow-y: auto;
+    text-align: center;
+    background: radial-gradient(ellipse at 50% 30%, #0b3325 0%, #062117 45%, #041109 100%);
+  }
+
+  .obal-hry.vidno {
+    display: flex;
+    animation: prolnuti .45s ease both;
+  }
+
+  .zavrit-hry {
+    position: fixed;
+    top: 14px;
+    right: 16px;
+    z-index: 7;
+  }
+
+  /* Obsah prekryvu musi mit sirku vynucenou. Jako deti svisleho
+     flexboxu se zarovnanim na stred by se smrstily na sirku obsahu
+     a vnitrni "width: 100 %" by pak pocitalo z te smrstene sirky. */
+  .rozcestnik,
+  .hra {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 440px;
+  }
+
+  .rozcestnik[hidden],
+  .hra[hidden] { display: none; }
+
+  /* ---- rozcestnik ---- */
+
+  .nadpis-her {
+    margin: 0 0 26px;
+    font-family: var(--sans);
+    font-size: 12px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: rgba(215,251,233,.5);
+  }
+
+  .dlazdice {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 340px;
+  }
+
+  .dlazdice button {
+    padding: 18px 20px;
+    text-align: left;
+    background: rgba(110,231,183,.06);
+    border: 1px solid rgba(110,231,183,.22);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: background .2s, border-color .2s, transform .14s;
+  }
+
+  .dlazdice button:hover  { background: rgba(110,231,183,.12); border-color: rgba(110,231,183,.5); }
+  .dlazdice button:active { transform: scale(.98); }
+
+  .dlazdice .nazev {
+    display: block;
+    font-family: var(--serif);
+    font-size: 23px;
+    color: #fff;
+  }
+
+  .dlazdice .popis {
+    display: block;
+    margin-top: 3px;
+    font-family: var(--sans);
+    font-size: 13px;
+    color: rgba(215,251,233,.55);
+  }
+
+  /* ---- sibenice ---- */
+
+  .sibenice {
+    width: 150px;
+    height: auto;
+    margin-bottom: 14px;
+  }
+
+  /* konstrukce je videt od zacatku, jen potichu */
+  .sibenice .kostra {
+    stroke: var(--zelena-svetla);
+    stroke-width: 3;
+    stroke-linecap: round;
+    opacity: .3;
+    fill: none;
+  }
+
+  /* panacek pribyva po chybach - JavaScript jen prepina tridu */
+  .sibenice .cast {
+    stroke: var(--zelena-svetla);
+    stroke-width: 3;
+    stroke-linecap: round;
+    fill: none;
+    opacity: 0;
+    transition: opacity .35s ease;
+  }
+
+  .sibenice .cast.vidno { opacity: .95; }
+
+  .slovo {
+    margin: 0 0 8px;
+    font-family: var(--serif);
+    font-size: clamp(27px, 7.5vw, 36px);
+    line-height: 1.3;
+    letter-spacing: .12em;
+    color: #fff;
+    /* pre-wrap drzi vic mezer za sebou - jinak by prohlizec
+       slouceni mezer smazal odsazeni mezi slovy ("MÍŠA ŘEZ") */
+    white-space: pre-wrap;
+    overflow-wrap: break-word;     /* az uplna nouze, kdyz se slovo nevejde */
+  }
+
+  /* delsi nazvy by jinak zabraly pul obrazovky */
+  .slovo.dlouhe {
+    font-size: clamp(19px, 5.2vw, 25px);
+    letter-spacing: .08em;
+  }
+
+  .napoveda {
+    margin: 0 0 22px;
+    font-family: var(--sans);
+    font-size: 13px;
+    letter-spacing: .04em;
+    color: rgba(215,251,233,.5);
+  }
+
+  .klavesnice {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    max-width: 430px;
+  }
+
+  .klavesnice .rada {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+  }
+
+  /* Pevna minimalni vyska misto pomeru stran - jinak jsou klavesy
+     na uzkem displeji mensi, nez se da trefit prstem. */
+  .klavesnice button {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 46px;
+    min-height: 44px;
+    padding: 0;
+    font-family: var(--sans);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-zeleny);
+    background: rgba(110,231,183,.08);
+    border: 1px solid rgba(110,231,183,.2);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .15s, color .15s, opacity .25s, transform .1s;
+  }
+
+  .klavesnice button:hover:not(:disabled) { background: rgba(110,231,183,.2); }
+  .klavesnice button:active:not(:disabled) { transform: scale(.92); }
+
+  .klavesnice button.trefa {
+    color: #04231a;
+    background: var(--zelena);
+    border-color: var(--zelena);
+  }
+
+  .klavesnice button.vedle {
+    opacity: .25;
+    border-color: rgba(110,231,183,.1);
+  }
+
+  .klavesnice button:disabled { cursor: default; }
+
+  .vysledek {
+    min-height: 1.5em;
+    margin: 20px 0 0;
+    font-family: var(--serif);
+    font-size: clamp(20px, 5.4vw, 26px);
+    color: #fff;
+  }
+
+  .vysledek:empty { margin: 0; }
+
+  .ovladani-hry {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .ovladani-hry button {
+    padding: 11px 22px;
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--zelena-svetla);
+    background: transparent;
+    border: 1px solid rgba(110,231,183,.3);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background .2s, border-color .2s;
+  }
+
+  .ovladani-hry button:hover { background: rgba(110,231,183,.1); border-color: rgba(110,231,183,.6); }
+
+  .ovladani-hry button[hidden] { display: none; }
 
   .srdce-ulozit {
     position: relative;
@@ -882,7 +1134,11 @@
 
   <div class="carka"></div>
 
-  <button id="tlacitko">Potřebuju slyšet</button>
+  <div class="hlavni-tlacitka">
+    <button class="hlavni-tlacitko" id="tlacitko">Potřebuju slyšet</button>
+    <button class="hlavni-tlacitko" id="vstup-hry">Chci si zahrát</button>
+  </div>
+
   <p id="hlaska"></p>
 
   <button class="srdce-ulozit" id="srdce-ulozit" aria-label="Uložit hlášku" hidden>
@@ -891,7 +1147,9 @@
     </svg>
   </button>
 
-  <button class="vstup-rozhovoru" id="vstup-rozhovoru">Jak se cítíš?</button>
+  <div class="vedlejsi-cesty">
+    <button class="vstup-rozhovoru" id="vstup-rozhovoru">Jak se cítíš?</button>
+  </div>
 
   <!-- rozhovor - objevi se misto bezneho ovladani -->
   <div id="rozhovor">
@@ -913,6 +1171,47 @@
     Rozbal dárek
   </button>
 </main>
+
+<!-- hry -->
+<div class="obal-hry" id="obal-hry">
+  <button class="zavrit zavrit-hry" id="zavrit-hry" aria-label="Zavřít">&times;</button>
+
+  <!-- rozcestnik -->
+  <div class="rozcestnik" id="rozcestnik">
+    <p class="nadpis-her">Co si zahrajeme?</p>
+    <div class="dlazdice" id="dlazdice"></div>
+  </div>
+
+  <!-- sibenice -->
+  <div class="hra" id="hra-sibenice" hidden>
+    <svg class="sibenice" id="sibenice" viewBox="0 0 160 175" aria-hidden="true">
+      <!-- konstrukce, ta je videt od zacatku -->
+      <path class="kostra" d="M18 165 H98"/>
+      <path class="kostra" d="M38 165 V18"/>
+      <path class="kostra" d="M38 18 H104"/>
+      <path class="kostra" d="M104 18 V36"/>
+      <!-- panacek, kazdy dil = jedna chyba -->
+      <circle class="cast" data-dil="0" cx="104" cy="49" r="13"/>
+      <path   class="cast" data-dil="1" d="M104 62 V110"/>
+      <path   class="cast" data-dil="2" d="M104 73 L85 94"/>
+      <path   class="cast" data-dil="3" d="M104 73 L123 94"/>
+      <path   class="cast" data-dil="4" d="M104 110 L87 140"/>
+      <path   class="cast" data-dil="5" d="M104 110 L121 140"/>
+    </svg>
+
+    <p class="slovo" id="slovo"></p>
+    <p class="napoveda" id="napoveda"></p>
+
+    <div class="klavesnice" id="klavesnice"></div>
+
+    <p class="vysledek" id="vysledek"></p>
+
+    <div class="ovladani-hry">
+      <button id="znovu-hra" hidden>Ještě jednou</button>
+      <button id="zpet-rozcestnik">Zpět na hry</button>
+    </div>
+  </div>
+</div>
 
 <!-- seznam ulozenych hlasek -->
 <div class="obal-oblibene" id="obal-oblibene">
@@ -1477,7 +1776,291 @@ vstupRozhovoru.addEventListener("click", otevriRozhovor);
 zpetEl.addEventListener("click", zavriRozhovor);
 
 
-/* ---------------- 6. darek ---------------- */
+/* ---------------- 6. hry ----------------
+   Rozcestnik + registr. Pridani dalsi hry = jedna polozka v HRY,
+   jeden <div class="hra"> v HTML a funkce, co ji spusti. */
+
+const obalHry      = document.getElementById("obal-hry");
+const rozcestnikEl = document.getElementById("rozcestnik");
+const dlazdiceEl   = document.getElementById("dlazdice");
+
+const HRY = [
+  {
+    nazev: "Šibenice",
+    popis: "Hádej slovo po písmenkách",
+    prvek: "hra-sibenice",
+    spust: function () { novaSibenice(); }
+  }
+];
+
+function schovejVsechnyHry() {
+  HRY.forEach(function (h) { document.getElementById(h.prvek).hidden = true; });
+}
+
+function ukazRozcestnik() {
+  schovejVsechnyHry();
+  rozcestnikEl.hidden = false;
+}
+
+function spustHru(hra) {
+  rozcestnikEl.hidden = true;
+  schovejVsechnyHry();
+  document.getElementById(hra.prvek).hidden = false;
+  hra.spust();
+}
+
+function otevriHry() { obalHry.classList.add("vidno"); ukazRozcestnik(); }
+function zavriHry()  { obalHry.classList.remove("vidno"); }
+
+HRY.forEach(function (hra) {
+  const b = document.createElement("button");
+
+  const nazev = document.createElement("span");
+  nazev.className = "nazev";
+  nazev.textContent = hra.nazev;
+
+  const popis = document.createElement("span");
+  popis.className = "popis";
+  popis.textContent = hra.popis;
+
+  b.appendChild(nazev);
+  b.appendChild(popis);
+  b.addEventListener("click", function () { spustHru(hra); });
+
+  dlazdiceEl.appendChild(b);
+});
+
+document.getElementById("vstup-hry").addEventListener("click", otevriHry);
+document.getElementById("zavrit-hry").addEventListener("click", zavriHry);
+document.getElementById("zpet-rozcestnik").addEventListener("click", ukazRozcestnik);
+
+
+/* ---- sibenice ---- */
+
+const SLOVA = [
+  { slovo: "OHEŇ",      napoveda: "Kde to začalo" },
+  { slovo: "TÁBOR",     napoveda: "Kam jsem tě pozval" },
+  { slovo: "STAVBA",    napoveda: "Kde jsme seděli" },
+  { slovo: "HVĚZDY",    napoveda: "Byly nad námi" },
+  { slovo: "ÚSMĚV",     napoveda: "Tohle na tobě mám nejradši" },
+  { slovo: "OBJETÍ",    napoveda: "Tohle mi chybí" },
+  { slovo: "VEČER",     napoveda: "Naše denní doba" },
+  { slovo: "ADÉLKA",    napoveda: "Nejhezčí slovo tady" },
+  { slovo: "KOPRETINA", napoveda: "Tohle uhodneš" },
+  { slovo: "LOST",      napoveda: "Asi jsem se ztratil" },
+  { slovo: "DUNA",      napoveda: "Říkal někdo písek?" },
+  { slovo: "ATREIDES ROYAL ORNITHOPTER", napoveda: "DUNA?" },
+  { slovo: "PALAČINKA", napoveda: "Dal bych si.." },
+  { slovo: "MÍŠA ŘEZ",  napoveda: "Dal bych si.." },
+  { slovo: "ŠŇŮRA",     napoveda: "Moje oblíbené slovo" },
+  { slovo: "DOCTOR WHO", napoveda: "Kdo?" },
+  { slovo: "TARDIS",    napoveda: "Doctor kdo?" }
+];
+
+const MAX_CHYB = 6;
+const RADY = ["ABCDEFGHI", "JKLMNOPQR", "STUVWXYZ"];
+
+const sibeniceEl   = document.getElementById("sibenice");
+const slovoEl      = document.getElementById("slovo");
+const napovedaEl   = document.getElementById("napoveda");
+const klavesniceEl = document.getElementById("klavesnice");
+const vysledekEl   = document.getElementById("vysledek");
+const znovuEl      = document.getElementById("znovu-hra");
+
+let aktualniSlovo, zkusena, chyby, konecHry;
+
+/* ---- balicek slov ----
+   Misto losovani pokazde znovu se zamicha cely seznam a hraje se
+   po jednom. Nez se neco zopakuje, projde vsech sedmnact slov.
+   Zbytek balicku prezije i zavreni stranky. */
+
+const KLIC_BALICEK = "adaapp-balicek-sibenice";
+
+// Otisk seznamu. Kdyz slova pridas nebo ubereš, balicek se zahodi
+// a zamicha znovu - jinak by se nove slovo necekane dlouho neobjevilo.
+function otiskSeznamu() {
+  return SLOVA.map(function (s) { return s.slovo; }).join("|");
+}
+
+function zamichej(pole) {
+  const kopie = pole.slice();
+
+  for (let i = kopie.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const docasne = kopie[i];
+    kopie[i] = kopie[j];
+    kopie[j] = docasne;
+  }
+
+  return kopie;
+}
+
+function nactiBalicek() {
+  try {
+    const ulozeny = JSON.parse(localStorage.getItem(KLIC_BALICEK));
+    if (!ulozeny || ulozeny.otisk !== otiskSeznamu()) return null;
+    return Array.isArray(ulozeny.zbyva) ? ulozeny.zbyva : null;
+  } catch (chyba) {
+    return null;
+  }
+}
+
+function ulozBalicek(zbyva) {
+  try {
+    localStorage.setItem(KLIC_BALICEK, JSON.stringify({
+      otisk: otiskSeznamu(),
+      zbyva: zbyva
+    }));
+  } catch (chyba) {}
+}
+
+function vytahniSlovo() {
+  let zbyva = nactiBalicek();
+
+  if (!zbyva || zbyva.length === 0) {
+    zbyva = zamichej(SLOVA.map(function (s) { return s.slovo; }));
+
+    // Aby hned po domichani nepadlo to same slovo, kterym balicek skoncil.
+    if (zbyva.length > 1 && aktualniSlovo && zbyva[0] === aktualniSlovo.slovo) {
+      zbyva.push(zbyva.shift());
+    }
+  }
+
+  const vybrane = zbyva.shift();
+  ulozBalicek(zbyva);
+
+  return SLOVA.find(function (s) { return s.slovo === vybrane; }) || SLOVA[0];
+}
+
+// "Ě" -> "E". Diky tomu staci klavesnice A-Z a diakritika neprekazi.
+function bezDiakritiky(text) {
+  return text.normalize("NFD").replace(/[̀-ͯ]/g, "");
+}
+
+function jePismeno(znak) {
+  return /[A-Z]/.test(bezDiakritiky(znak).toUpperCase());
+}
+
+function novaSibenice() {
+  aktualniSlovo = vytahniSlovo();
+  zkusena  = [];
+  chyby    = 0;
+  konecHry = false;
+
+  napovedaEl.textContent = aktualniSlovo.napoveda;
+  vysledekEl.textContent = "";
+  znovuEl.hidden = true;
+
+  // dlouhe slovo potrebuje mensi pismo, jinak zabere pul obrazovky
+  slovoEl.classList.toggle("dlouhe", aktualniSlovo.slovo.length > 12);
+
+  sibeniceEl.querySelectorAll(".cast").forEach(function (c) {
+    c.classList.remove("vidno");
+  });
+
+  postavKlavesnici();
+  vykresliSlovo();
+}
+
+function postavKlavesnici() {
+  klavesniceEl.innerHTML = "";
+
+  RADY.forEach(function (rada) {
+    const divRada = document.createElement("div");
+    divRada.className = "rada";
+
+    rada.split("").forEach(function (pismeno) {
+      const b = document.createElement("button");
+      b.textContent = pismeno;
+      b.dataset.pismeno = pismeno;
+      b.addEventListener("click", function () { hadej(pismeno); });
+      divRada.appendChild(b);
+    });
+
+    klavesniceEl.appendChild(divRada);
+  });
+}
+
+// odhalVse = true pouzijeme na konci hry, kdyz slovo prozradime
+//
+// Pismena uvnitr jednoho slova spojujeme NEZLOMITELNOU mezerou, jinak
+// by prohlizec mohl slovo rozseknout uprostred ("ORN / ITHOPTER").
+// Mezi slovy je bezna mezera - tam se zalomit smi a je to spravne.
+function sestavSlovo(odhalVse) {
+  const NEZLOM = " ";
+
+  return aktualniSlovo.slovo.split(" ").map(function (slovo) {
+    return slovo.split("").map(function (znak) {
+      if (!jePismeno(znak)) return znak;
+      if (odhalVse)         return znak;
+
+      return zkusena.indexOf(bezDiakritiky(znak).toUpperCase()) !== -1 ? znak : "_";
+    }).join(NEZLOM);
+  }).join("   ");
+}
+
+function vykresliSlovo() {
+  slovoEl.textContent = sestavSlovo(false);
+}
+
+function vseUhodnuto() {
+  return aktualniSlovo.slovo.split("").every(function (znak) {
+    if (!jePismeno(znak)) return true;
+    return zkusena.indexOf(bezDiakritiky(znak).toUpperCase()) !== -1;
+  });
+}
+
+function hadej(pismeno) {
+  if (konecHry || zkusena.indexOf(pismeno) !== -1) return;
+
+  const tlacitko = klavesniceEl.querySelector('button[data-pismeno="' + pismeno + '"]');
+  if (!tlacitko) return;
+
+  zkusena.push(pismeno);
+  tlacitko.disabled = true;
+
+  const trefa = bezDiakritiky(aktualniSlovo.slovo).toUpperCase().indexOf(pismeno) !== -1;
+  tlacitko.classList.add(trefa ? "trefa" : "vedle");
+
+  if (!trefa) {
+    const dil = sibeniceEl.querySelector('.cast[data-dil="' + chyby + '"]');
+    if (dil) dil.classList.add("vidno");
+    chyby++;
+  }
+
+  vykresliSlovo();
+
+  if (vseUhodnuto())          dokonciSibenici(true);
+  else if (chyby >= MAX_CHYB) dokonciSibenici(false);
+}
+
+function dokonciSibenici(vyhra) {
+  konecHry = true;
+  znovuEl.hidden = false;
+
+  klavesniceEl.querySelectorAll("button").forEach(function (b) { b.disabled = true; });
+
+  if (vyhra) {
+    vysledekEl.textContent = "Máš to. Věděl jsem to.";
+  } else {
+    slovoEl.textContent = sestavSlovo(true);
+    vysledekEl.textContent = "Tentokrát ne. Bylo to " + aktualniSlovo.slovo + ".";
+  }
+}
+
+znovuEl.addEventListener("click", novaSibenice);
+
+// na pocitaci jde hadat i skutecnou klavesnici
+document.addEventListener("keydown", function (udalost) {
+  if (!obalHry.classList.contains("vidno")) return;
+  if (document.getElementById("hra-sibenice").hidden) return;
+
+  const pismeno = bezDiakritiky(udalost.key).toUpperCase();
+  if (pismeno.length === 1 && /[A-Z]/.test(pismeno)) hadej(pismeno);
+});
+
+
+/* ---------------- 7. darek ---------------- */
 
 const darek     = document.getElementById("darek");
 const obalDarku = document.getElementById("obal-darku");
@@ -1494,12 +2077,13 @@ obalDarku.addEventListener("click", function (udalost) {
 });
 
 
-/* ---------------- 7. Escape zavira prekryvy ---------------- */
+/* ---------------- 8. Escape zavira prekryvy ---------------- */
 
 document.addEventListener("keydown", function (udalost) {
   if (udalost.key !== "Escape") return;
   zavriDarek();
   zavriOblibene();
+  zavriHry();
 });
 </script>
 

@@ -5,3 +5,6 @@ desktop.ini
 # Editory
 .vscode/
 .idea/
+
+# lokalni dev server, nepatri do repozitare
+.claude/
