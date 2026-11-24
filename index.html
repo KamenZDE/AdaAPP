@@ -759,6 +759,75 @@
     color: rgba(215,251,233,.55);
   }
 
+  /* ---- pravda nebo lez ---- */
+
+  .zadani-kola {
+    margin: 0 0 20px;
+    font-family: var(--sans);
+    font-size: 13px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: rgba(215,251,233,.5);
+  }
+
+  .tvrzeni {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .tvrzeni button {
+    padding: 15px 18px;
+    text-align: left;
+    font-family: var(--serif);
+    font-size: 19px;
+    line-height: 1.4;
+    color: var(--text-zeleny);
+    background: rgba(110,231,183,.06);
+    border: 1px solid rgba(110,231,183,.22);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background .2s, border-color .2s, opacity .3s, transform .14s;
+  }
+
+  .tvrzeni button:hover:not(:disabled)  { background: rgba(110,231,183,.12); border-color: rgba(110,231,183,.5); }
+  .tvrzeni button:active:not(:disabled) { transform: scale(.99); }
+  .tvrzeni button:disabled { cursor: default; }
+
+  /* po odhaleni: lez cervene, pravdy zelene a ztlumene */
+  .tvrzeni button.lez {
+    color: #fff;
+    background: rgba(232,135,155,.16);
+    border-color: rgba(232,135,155,.6);
+  }
+
+  .tvrzeni button.pravda {
+    opacity: .45;
+    border-color: rgba(110,231,183,.14);
+  }
+
+  .verdikt {
+    margin: 22px 0 0;
+    font-family: var(--serif);
+    font-size: clamp(21px, 5.4vw, 26px);
+    color: #fff;
+  }
+
+  .verdikt:empty { margin: 0; }
+
+  .komentar-kola {
+    max-width: 420px;
+    margin: 10px 0 0;
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.55;
+    color: rgba(215,251,233,.65);
+  }
+
+  .komentar-kola:empty { margin: 0; }
+
   /* ---- pexeso ---- */
 
   .mrizka {
@@ -1309,6 +1378,19 @@
     <div class="ovladani-hry">
       <button id="znovu-pexeso" hidden>Ještě jednou</button>
       <button id="zpet-rozcestnik-pexeso">Zpět na hry</button>
+    </div>
+  </div>
+
+  <!-- pravda nebo lez -->
+  <div class="hra" id="hra-pravda" hidden>
+    <p class="zadani-kola">Jedno z toho je lež. Které?</p>
+    <div class="tvrzeni" id="tvrzeni"></div>
+    <p class="verdikt" id="verdikt"></p>
+    <p class="komentar-kola" id="komentar-kola"></p>
+
+    <div class="ovladani-hry">
+      <button id="dalsi-kolo" hidden>Další</button>
+      <button id="zpet-rozcestnik-pravda">Zpět na hry</button>
     </div>
   </div>
 
@@ -1943,6 +2025,12 @@ const HRY = [
     popis: "Najdi dvojice",
     prvek: "hra-pexeso",
     spust: function () { novePexeso(); }
+  },
+  {
+    nazev: "Pravda nebo lež",
+    popis: "Tři tvrzení o mně, jedno smyšlené",
+    prvek: "hra-pravda",
+    spust: function () { noveKolo(); }
   }
 ];
 
@@ -1986,6 +2074,145 @@ HRY.forEach(function (hra) {
 document.getElementById("vstup-hry").addEventListener("click", otevriHry);
 document.getElementById("zavrit-hry").addEventListener("click", zavriHry);
 document.getElementById("zpet-rozcestnik").addEventListener("click", ukazRozcestnik);
+
+
+/* ---- zamichany balicek ----
+   Misto losovani pokazde znovu se zamicha cely seznam a bere se po jednom.
+   Nez se neco zopakuje, projde to vsechno. Zbytek prezije zavreni stranky.
+   Pouziva to sibenice i pravda nebo lez. */
+
+function zamichej(pole) {
+  const kopie = pole.slice();
+
+  for (let i = kopie.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const docasne = kopie[i];
+    kopie[i] = kopie[j];
+    kopie[j] = docasne;
+  }
+
+  return kopie;
+}
+
+// vsechny = pole nazvu (retezcu). posledni = co padlo naposled, at se to
+// hned po domichani nezopakuje. Vraci jeden nazev.
+function vytahniZBalicku(klic, vsechny, posledni) {
+  const otisk = vsechny.join("|");
+  let zbyva = null;
+
+  try {
+    const ulozeny = JSON.parse(localStorage.getItem(klic));
+    // Kdyz se seznam zmeni, otisk nesedi a balicek se zahodi - jinak
+    // by se nova polozka necekane dlouho neobjevila.
+    if (ulozeny && ulozeny.otisk === otisk && Array.isArray(ulozeny.zbyva)) {
+      zbyva = ulozeny.zbyva;
+    }
+  } catch (chyba) {}
+
+  if (!zbyva || zbyva.length === 0) {
+    zbyva = zamichej(vsechny);
+    if (zbyva.length > 1 && posledni && zbyva[0] === posledni) {
+      zbyva.push(zbyva.shift());
+    }
+  }
+
+  const vybrane = zbyva.shift();
+
+  try {
+    localStorage.setItem(klic, JSON.stringify({ otisk: otisk, zbyva: zbyva }));
+  } catch (chyba) {}
+
+  return vybrane;
+}
+
+
+/* ---- pravda nebo lez ----
+
+   POZOR: tohle jsou zatim jen ukazkove kusy, aby bylo videt, jak to funguje.
+   Nahrad je skutecnymi tvrzenimi o sobe.
+
+   "lez" je poradi vymysleneho tvrzeni - 0 je prvni, 1 druhe, 2 treti.
+   "komentar" se ukaze az po odpovedi a je nepovinny. */
+
+const KOLA = [
+  {
+    tvrzeni: [
+      "UKÁZKA: tohle je pravda číslo jedna.",
+      "UKÁZKA: tohle je ta vymyšlená.",
+      "UKÁZKA: tohle je pravda číslo dvě."
+    ],
+    lez: 1,
+    komentar: "Sem můžeš dopsat, jak to doopravdy bylo."
+  },
+  {
+    tvrzeni: [
+      "UKÁZKA 2: první tvrzení.",
+      "UKÁZKA 2: druhé tvrzení.",
+      "UKÁZKA 2: tohle je lež."
+    ],
+    lez: 2,
+    komentar: ""
+  },
+  {
+    tvrzeni: [
+      "UKÁZKA 3: tohle je lež.",
+      "UKÁZKA 3: druhé tvrzení.",
+      "UKÁZKA 3: třetí tvrzení."
+    ],
+    lez: 0,
+    komentar: "Komentář je nepovinný, tenhle je navíc."
+  }
+];
+
+const KLIC_BALICEK_KOL = "adaapp-balicek-kol";
+
+const tvrzeniEl  = document.getElementById("tvrzeni");
+const verdiktEl  = document.getElementById("verdikt");
+const komentarEl = document.getElementById("komentar-kola");
+const dalsiKolo  = document.getElementById("dalsi-kolo");
+
+let aktualniKolo = null;
+
+function noveKolo() {
+  // jako id kola bereme jeho prvni tvrzeni - je dost jedinecne
+  const idcka = KOLA.map(function (k) { return k.tvrzeni[0]; });
+  const posledni = aktualniKolo ? aktualniKolo.tvrzeni[0] : null;
+  const vybrane = vytahniZBalicku(KLIC_BALICEK_KOL, idcka, posledni);
+
+  aktualniKolo = KOLA.find(function (k) { return k.tvrzeni[0] === vybrane; }) || KOLA[0];
+
+  verdiktEl.textContent = "";
+  komentarEl.textContent = "";
+  dalsiKolo.hidden = true;
+  tvrzeniEl.innerHTML = "";
+
+  aktualniKolo.tvrzeni.forEach(function (text, poradi) {
+    const b = document.createElement("button");
+    b.textContent = text;
+    b.addEventListener("click", function () { odpoved(poradi); });
+    tvrzeniEl.appendChild(b);
+  });
+}
+
+function odpoved(poradi) {
+  const tlacitka = [...tvrzeniEl.querySelectorAll("button")];
+
+  tlacitka.forEach(function (b, i) {
+    b.disabled = true;
+    b.classList.add(i === aktualniKolo.lez ? "lez" : "pravda");
+  });
+
+  // kterou vetu si vymyslel nemusime rikat slovy - je cervene zvyraznena
+  verdiktEl.textContent = poradi === aktualniKolo.lez
+    ? "Trefa. Tohle jsem si vymyslel."
+    : "Vedle. Tohle byla pravda.";
+
+  komentarEl.textContent = aktualniKolo.komentar || "";
+  dalsiKolo.hidden = false;
+}
+
+dalsiKolo.addEventListener("click", noveKolo);
+document.getElementById("zpet-rozcestnik-pravda").addEventListener("click", ukazRozcestnik);
 
 
 /* ---- pexeso ---- */
@@ -2131,65 +2358,15 @@ const znovuEl      = document.getElementById("znovu-hra");
 
 let aktualniSlovo, zkusena, chyby, konecHry;
 
-/* ---- balicek slov ----
-   Misto losovani pokazde znovu se zamicha cely seznam a hraje se
-   po jednom. Nez se neco zopakuje, projde vsech sedmnact slov.
-   Zbytek balicku prezije i zavreni stranky. */
+/* ---- vyber slova ----
+   Michani a pamatovani resi sdilena funkce vytahniZBalicku vyse. */
 
 const KLIC_BALICEK = "adaapp-balicek-sibenice";
 
-// Otisk seznamu. Kdyz slova pridas nebo ubereš, balicek se zahodi
-// a zamicha znovu - jinak by se nove slovo necekane dlouho neobjevilo.
-function otiskSeznamu() {
-  return SLOVA.map(function (s) { return s.slovo; }).join("|");
-}
-
-function zamichej(pole) {
-  const kopie = pole.slice();
-
-  for (let i = kopie.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const docasne = kopie[i];
-    kopie[i] = kopie[j];
-    kopie[j] = docasne;
-  }
-
-  return kopie;
-}
-
-function nactiBalicek() {
-  try {
-    const ulozeny = JSON.parse(localStorage.getItem(KLIC_BALICEK));
-    if (!ulozeny || ulozeny.otisk !== otiskSeznamu()) return null;
-    return Array.isArray(ulozeny.zbyva) ? ulozeny.zbyva : null;
-  } catch (chyba) {
-    return null;
-  }
-}
-
-function ulozBalicek(zbyva) {
-  try {
-    localStorage.setItem(KLIC_BALICEK, JSON.stringify({
-      otisk: otiskSeznamu(),
-      zbyva: zbyva
-    }));
-  } catch (chyba) {}
-}
-
 function vytahniSlovo() {
-  let zbyva = nactiBalicek();
-
-  if (!zbyva || zbyva.length === 0) {
-    zbyva = zamichej(SLOVA.map(function (s) { return s.slovo; }));
-
-    // Aby hned po domichani nepadlo to same slovo, kterym balicek skoncil.
-    if (zbyva.length > 1 && aktualniSlovo && zbyva[0] === aktualniSlovo.slovo) {
-      zbyva.push(zbyva.shift());
-    }
-  }
-
-  const vybrane = zbyva.shift();
-  ulozBalicek(zbyva);
+  const nazvy = SLOVA.map(function (s) { return s.slovo; });
+  const posledni = aktualniSlovo ? aktualniSlovo.slovo : null;
+  const vybrane = vytahniZBalicku(KLIC_BALICEK, nazvy, posledni);
 
   return SLOVA.find(function (s) { return s.slovo === vybrane; }) || SLOVA[0];
 }
