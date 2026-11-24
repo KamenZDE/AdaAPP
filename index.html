@@ -759,6 +759,95 @@
     color: rgba(215,251,233,.55);
   }
 
+  /* ---- pexeso ---- */
+
+  .mrizka {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: 100%;
+    max-width: 330px;
+    margin-bottom: 4px;
+  }
+
+  .pexeso-karta {
+    aspect-ratio: 1 / 1;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    perspective: 700px;            /* bez toho by otoceni bylo ploche */
+  }
+
+  /* span je ve vychozim stavu radkovy prvek a ten rozmery ignoruje -
+     bez display: block by mel nulovou velikost a karta by byla prazdna */
+  .pexeso-karta .list {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform .45s cubic-bezier(.3,.8,.4,1);
+  }
+
+  .pexeso-karta.otocena .list { transform: rotateY(180deg); }
+
+  .pexeso-karta .rub,
+  .pexeso-karta .lic {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    backface-visibility: hidden;   /* jinak prosvita druha strana */
+  }
+
+  .pexeso-karta .rub {
+    background: rgba(110,231,183,.08);
+    border: 1px solid rgba(110,231,183,.22);
+  }
+
+  /* na rubu je jen tecka, at karty nevypadaji prazdne */
+  .pexeso-karta .rub::after {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(110,231,183,.3);
+  }
+
+  .pexeso-karta .lic {
+    transform: rotateY(180deg);
+    background: rgba(110,231,183,.14);
+    border: 1px solid rgba(110,231,183,.4);
+  }
+
+  .pexeso-karta .lic svg {
+    width: 58%;
+    height: 58%;
+    color: var(--zelena-svetla);
+  }
+
+  .pexeso-karta.nalezena .lic {
+    background: rgba(52,211,153,.26);
+    border-color: var(--zelena);
+  }
+
+  .pexeso-karta.nalezena { cursor: default; }
+
+  .pexeso-karta:disabled { cursor: default; }
+
+  .pexeso-stav {
+    min-height: 1.4em;
+    margin: 14px 0 0;
+    font-family: var(--sans);
+    font-size: 13px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: rgba(215,251,233,.5);
+  }
+
   /* ---- sibenice ---- */
 
   .sibenice {
@@ -1211,6 +1300,64 @@
       <button id="zpet-rozcestnik">Zpět na hry</button>
     </div>
   </div>
+
+  <!-- pexeso -->
+  <div class="hra" id="hra-pexeso" hidden>
+    <div class="mrizka" id="mrizka"></div>
+    <p class="pexeso-stav" id="pexeso-stav"></p>
+
+    <div class="ovladani-hry">
+      <button id="znovu-pexeso" hidden>Ještě jednou</button>
+      <button id="zpet-rozcestnik-pexeso">Zpět na hry</button>
+    </div>
+  </div>
+
+  <!-- Obrazky na karty. Jsou v sablone, aby se nevykreslovaly samy od sebe -
+       JavaScript si je odsud kopiruje. Menit se daji primo tady. -->
+  <template id="ikony-pexeso">
+    <svg data-ikona="srdce" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+      <path d="M12 20.6l-1.3-1.2C5.5 14.8 2.2 11.8 2.2 8.3 2.2 5.5 4.4 3.3 7.2 3.3c1.6 0 3.1.75 4.1 1.95C12.3 4.05 13.8 3.3 15.4 3.3c2.8 0 5 2.2 5 5 0 3.5-3.3 6.5-8.5 11.1z"/>
+    </svg>
+
+    <svg data-ikona="ohen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+      <path d="M12 2.2c.6 3.3-1.2 5.2-2.9 6.9C7.3 10.9 6 12.5 6 14.8a6 6 0 0 0 12 0c0-2.4-1.1-4.2-2.5-5.7-.2 1.5-1 2.5-2.2 3 1-3.9-.5-7.3-1.3-9.9z"/>
+    </svg>
+
+    <svg data-ikona="hvezda" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+      <path d="M12 2.8l2.85 5.78 6.38.93-4.62 4.5 1.09 6.35L12 17.35l-5.7 3.01 1.09-6.35-4.62-4.5 6.38-.93z"/>
+    </svg>
+
+    <svg data-ikona="kopretina" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <ellipse cx="12" cy="5.9" rx="1.8" ry="3.5"/>
+      <ellipse cx="12" cy="5.9" rx="1.8" ry="3.5" transform="rotate(45 12 12)"/>
+      <ellipse cx="12" cy="5.9" rx="1.8" ry="3.5" transform="rotate(90 12 12)"/>
+      <ellipse cx="12" cy="5.9" rx="1.8" ry="3.5" transform="rotate(135 12 12)"/>
+      <ellipse cx="12" cy="5.9" rx="1.8" ry="3.5" transform="rotate(180 12 12)"/>
+      <ellipse cx="12" cy="5.9" rx="1.8" ry="3.5" transform="rotate(225 12 12)"/>
+      <ellipse cx="12" cy="5.9" rx="1.8" ry="3.5" transform="rotate(270 12 12)"/>
+      <ellipse cx="12" cy="5.9" rx="1.8" ry="3.5" transform="rotate(315 12 12)"/>
+      <circle cx="12" cy="12" r="2.3" fill="currentColor" stroke="none"/>
+    </svg>
+
+    <svg data-ikona="tardis" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round">
+      <rect x="7" y="7.6" width="10" height="13.4" rx="0.5"/>
+      <path d="M5.5 7.6h13"/>
+      <path d="M6.5 5.9h11"/>
+      <rect x="11" y="2.4" width="2" height="1.8" rx="0.3"/>
+      <path d="M12 4.2v1.7"/>
+      <path d="M12 7.6V21"/>
+      <rect x="8.4" y="9.3" width="2.7" height="3.1"/>
+      <rect x="12.9" y="9.3" width="2.7" height="3.1"/>
+    </svg>
+
+    <svg data-ikona="kocka" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M4.6 3.2 8.4 7.6Q12 6.7 15.6 7.6L19.4 3.2 19.1 10.8Q19.1 19.6 12 19.6 4.9 19.6 4.9 10.8Z"/>
+      <circle cx="9.5" cy="12.3" r="1" fill="currentColor" stroke="none"/>
+      <circle cx="14.5" cy="12.3" r="1" fill="currentColor" stroke="none"/>
+      <path d="M11 15.1h2l-1 1.3z" fill="currentColor" stroke="none"/>
+      <path d="M4.7 13.4 1.9 12.6M4.7 15.6 2.2 16.4M19.3 13.4 22.1 12.6M19.3 15.6 21.8 16.4"/>
+    </svg>
+  </template>
 </div>
 
 <!-- seznam ulozenych hlasek -->
@@ -1790,6 +1937,12 @@ const HRY = [
     popis: "Hádej slovo po písmenkách",
     prvek: "hra-sibenice",
     spust: function () { novaSibenice(); }
+  },
+  {
+    nazev: "Pexeso",
+    popis: "Najdi dvojice",
+    prvek: "hra-pexeso",
+    spust: function () { novePexeso(); }
   }
 ];
 
@@ -1833,6 +1986,115 @@ HRY.forEach(function (hra) {
 document.getElementById("vstup-hry").addEventListener("click", otevriHry);
 document.getElementById("zavrit-hry").addEventListener("click", zavriHry);
 document.getElementById("zpet-rozcestnik").addEventListener("click", ukazRozcestnik);
+
+
+/* ---- pexeso ---- */
+
+const IKONY = ["srdce", "ohen", "hvezda", "kopretina", "tardis", "kocka"];
+const PAUZA_NESHODA = 850;   // jak dlouho jsou nesedici karty videt, nez se otoci zpatky
+
+const mrizkaEl     = document.getElementById("mrizka");
+const pexesoStavEl = document.getElementById("pexeso-stav");
+const znovuPexeso  = document.getElementById("znovu-pexeso");
+const sablonaIkon  = document.getElementById("ikony-pexeso");
+
+let otocene, nalezeno, tahy, blokovano;
+
+function vyrobKartu(jmeno) {
+  const karta = document.createElement("button");
+  karta.className = "pexeso-karta";
+  karta.dataset.ikona = jmeno;
+  karta.setAttribute("aria-label", "Karta");
+
+  const list = document.createElement("span");
+  list.className = "list";
+
+  const rub = document.createElement("span");
+  rub.className = "rub";
+
+  const lic = document.createElement("span");
+  lic.className = "lic";
+  lic.appendChild(sablonaIkon.content.querySelector('[data-ikona="' + jmeno + '"]').cloneNode(true));
+
+  list.appendChild(rub);
+  list.appendChild(lic);
+  karta.appendChild(list);
+
+  karta.addEventListener("click", function () { otocKartu(karta); });
+
+  return karta;
+}
+
+function novePexeso() {
+  otocene   = [];
+  nalezeno  = 0;
+  tahy      = 0;
+  blokovano = false;
+
+  pexesoStavEl.textContent = "";
+  znovuPexeso.hidden = true;
+  mrizkaEl.innerHTML = "";
+
+  // kazda ikona dvakrat, pak zamichat
+  zamichej(IKONY.concat(IKONY)).forEach(function (jmeno) {
+    mrizkaEl.appendChild(vyrobKartu(jmeno));
+  });
+}
+
+function otocKartu(karta) {
+  if (blokovano) return;
+  if (karta.classList.contains("otocena")) return;
+  if (karta.classList.contains("nalezena")) return;
+
+  karta.classList.add("otocena");
+  otocene.push(karta);
+
+  if (otocene.length < 2) return;
+
+  tahy++;
+
+  const prvni = otocene[0];
+  const druha = otocene[1];
+
+  if (prvni.dataset.ikona === druha.dataset.ikona) {
+    prvni.classList.add("nalezena");
+    druha.classList.add("nalezena");
+    prvni.disabled = true;
+    druha.disabled = true;
+
+    otocene = [];
+    nalezeno++;
+
+    if (nalezeno === IKONY.length) dokonciPexeso();
+    return;
+  }
+
+  // Neshoda. Chvili je necháme odkryte, at si je staci zapamatovat,
+  // a mezitim se neda klikat - jinak by slo odkryt celou mrizku najednou.
+  blokovano = true;
+
+  setTimeout(function () {
+    prvni.classList.remove("otocena");
+    druha.classList.remove("otocena");
+    otocene = [];
+    blokovano = false;
+  }, PAUZA_NESHODA);
+}
+
+// cesky: 1 tah, 2-4 tahy, 5 a vic tahu
+function sklonujTahy(pocet) {
+  if (pocet === 1) return "tah";
+  if (pocet >= 2 && pocet <= 4) return "tahy";
+  return "tahů";
+}
+
+function dokonciPexeso() {
+  pexesoStavEl.textContent = "Všechno jsi našla. Na " + tahy + " " + sklonujTahy(tahy) + ".";
+  znovuPexeso.hidden = false;
+}
+
+znovuPexeso.addEventListener("click", novePexeso);
+document.getElementById("zpet-rozcestnik-pexeso").addEventListener("click", ukazRozcestnik);
 
 
 /* ---- sibenice ---- */
