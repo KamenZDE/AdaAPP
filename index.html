@@ -797,10 +797,12 @@
   .tvrzeni button:disabled { cursor: default; }
 
   /* po odhaleni: lez cervene, pravdy zelene a ztlumene */
+  /* vyraznejsi, aby bylo na prvni pohled jasne, ktera to byla */
   .tvrzeni button.lez {
     color: #fff;
-    background: rgba(232,135,155,.16);
-    border-color: rgba(232,135,155,.6);
+    background: rgba(232,135,155,.26);
+    border-color: rgba(232,135,155,.9);
+    box-shadow: 0 0 22px rgba(232,135,155,.22);
   }
 
   .tvrzeni button.pravda {
@@ -2188,6 +2190,42 @@ const KOLA = [
     ],
     lez: 2,
     komentar: "V Itálii jsem nikdy nebyl. Na Ukrajině jsem byl asi dvakrát s dědou jen za hranicemi, kde jsme kupovali nějaký bonbony a cigarety, protože byly levný 😃"
+  },
+  {
+    tvrzeni: [
+      "Mám Volkswagen Caddy Maxi.",
+      "Mám přenosnou bateriovou stanici EcoFlow.",
+      "Moje Caddy má zabudovaný solární systém na střeše."
+    ],
+    lez: 2,
+    komentar: "O soláru přemýšlím, ale byl bych na parkovištích moc nápadný. Až budu mít někdy větší auto."
+  },
+  {
+    tvrzeni: [
+      "Dokážu se zaseknout na několik hodin nad technickým problémem.",
+      "Mám tendenci vymýšlet automatizace i na věci, které by šly udělat ručně.",
+      "Nedělá mi problém se soustředit."
+    ],
+    lez: 2,
+    komentar: "Dělá mi problém se soustředit 😃"
+  },
+  {
+    tvrzeni: [
+      "Viděl jsem Harryho Pottera.",
+      "Viděl jsem Fantastická zvířata.",
+      "Viděl jsem Hobita."
+    ],
+    lez: 2,
+    komentar: "Hobita jsem neviděl, ale jednou to vyjde 😃"
+  },
+  {
+    tvrzeni: [
+      "Mám radši kolo než brusle.",
+      "Mám dva droníky.",
+      "Mám autíčko na ovládání."
+    ],
+    lez: 2,
+    komentar: "Autíčko jsem měl, teď už mám jen droníky."
   }
 ];
 
@@ -2199,6 +2237,7 @@ const komentarEl = document.getElementById("komentar-kola");
 const dalsiKolo  = document.getElementById("dalsi-kolo");
 
 let aktualniKolo = null;
+let zamichanaTvrzeni = [];
 
 function noveKolo() {
   // jako id kola bereme jeho prvni tvrzeni - je dost jedinecne
@@ -2208,14 +2247,20 @@ function noveKolo() {
 
   aktualniKolo = KOLA.find(function (k) { return k.tvrzeni[0] === vybrane; }) || KOLA[0];
 
+  // Poradi se micha pri kazdem zobrazeni. Diky tomu nezalezi na tom,
+  // na kterem miste je lez napsana v seznamu - z pozice se neda nic vycist.
+  zamichanaTvrzeni = zamichej(aktualniKolo.tvrzeni.map(function (text, i) {
+    return { text: text, jeLez: i === aktualniKolo.lez };
+  }));
+
   verdiktEl.textContent = "";
   komentarEl.textContent = "";
   dalsiKolo.hidden = true;
   tvrzeniEl.innerHTML = "";
 
-  aktualniKolo.tvrzeni.forEach(function (text, poradi) {
+  zamichanaTvrzeni.forEach(function (polozka, poradi) {
     const b = document.createElement("button");
-    b.textContent = text;
+    b.textContent = polozka.text;
     b.addEventListener("click", function () { odpoved(poradi); });
     tvrzeniEl.appendChild(b);
   });
@@ -2226,11 +2271,11 @@ function odpoved(poradi) {
 
   tlacitka.forEach(function (b, i) {
     b.disabled = true;
-    b.classList.add(i === aktualniKolo.lez ? "lez" : "pravda");
+    b.classList.add(zamichanaTvrzeni[i].jeLez ? "lez" : "pravda");
   });
 
   // kterou vetu si vymyslel nemusime rikat slovy - je cervene zvyraznena
-  verdiktEl.textContent = poradi === aktualniKolo.lez
+  verdiktEl.textContent = zamichanaTvrzeni[poradi].jeLez
     ? "Trefa. Tohle jsem si vymyslel."
     : "Vedle. Tohle byla pravda.";
 
